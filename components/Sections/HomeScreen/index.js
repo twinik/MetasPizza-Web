@@ -7,6 +7,7 @@ import homescreen from "../../../public/images/home.jpg";
 function index() {
   return (
     <div className={styles["container"]}>
+      {/* <div className={styles["gradient"]}></div> */}
       <Image
         src={homescreen}
         className={styles["image"]}

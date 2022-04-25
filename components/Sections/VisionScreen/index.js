@@ -26,7 +26,11 @@ function index() {
       </div>
       <div className={styles["right-content"]}>
         <div className={styles["img-container"]}>
-          <img src={"/images/pizza.jpg"} alt="pizza" />
+          <img
+            src={"/images/pizza.jpg"}
+            alt="pizza"
+            className={styles["img"]}
+          />
         </div>
       </div>
     </div>
