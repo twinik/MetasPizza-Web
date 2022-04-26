@@ -24,7 +24,7 @@ const preSaleMaxPerTx = 3;
 const publicSaleMaxSupply = 3333;
 const publicSaleMaxPerTx = 7;
 
-//timer functions
+//timer functionss
 
 const handlePreSaleTimeLeft = () => {
   let date = new Date();
