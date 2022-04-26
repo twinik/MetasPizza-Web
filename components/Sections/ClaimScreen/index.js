@@ -1,6 +1,20 @@
 import React, { useState, useEffect, useRef } from "react";
-
 import styles from "./ClaimScreen.module.css";
+
+import { useWeb3React } from "@web3-react/core";
+import { InjectedConnector } from "@web3-react/injected-connector";
+import { ethers } from "ethers";
+import toast, { Toaster } from "react-hot-toast";
+import CryptoJS from "crypto-js";
+
+import contractAbi from "../../../utils/HolyNFT.json";
+import signatures from "../../../utils/signatures.json";
+
+const injected = new InjectedConnector({ supportedChainIds: [1] });
+
+const contractAddress = "0x07511e88628f990d0ada3c446da3859833a0798f";
+const contractHash =
+  "50ac6aedd79d14efa88e4097bdefde819d332a731a9b9f503402979207582b6b";
 
 const unitPrice = 0.0777;
 
@@ -80,7 +94,268 @@ const handlePublicSaleStart = () => {
   return timeLeft;
 };
 
-export default function Claim() {
+const Claim = () => {
+  const { active, account, library, connector, activate, deactivate } =
+    useWeb3React();
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [isMinting, setIsMinting] = useState(false);
+  const [isWhitelisted, setIsWhitelisted] = useState(false);
+
+  const signer = useRef();
+  const contract = useRef();
+
+  const [balance, setBalance] = useState();
+  const [totalSupply, setTotalSupply] = useState();
+  const [preSaleStart, setPreSaleStart] = useState(handlePreSaleTimeLeft());
+  const [publicSaleStart, setPublicSaleStart] = useState(
+    handlePublicSaleStart()
+  );
+
+  const preSaleStartTimeout = useRef();
+  const publicSaleStartTimeout = useRef();
+
+  const [preSaleIsActive, setPreSaleIsActive] = useState(false);
+  const [publicSaleIsActive, setPublicSaleIsActive] = useState(false);
+
+  const [count, setCount] = useState(1);
+  const totalPrice = unitPrice * count;
+
+  const [totalMintedByAddress, setTotalMintedByAddress] = useState();
+
+  const maxPerAccount = publicSaleIsActive
+    ? publicSaleMaxPerTx
+    : preSaleMaxPerTx;
+
+  const maxAllowed = Math.max(0, maxPerAccount - (totalMintedByAddress ?? 0));
+
+  const contractIsValid = async () => {
+    // Contract was not recognized
+
+    const code = await library.getCode(contractAddress);
+    const codeHash = CryptoJS.SHA256(code).toString();
+
+    return codeHash === contractHash;
+  };
+
+  const getMintedByUser = async () => {
+    const fromBlock = 13692602;
+    let count = 0;
+
+    const transferSingleEvents = await contract.current.queryFilter(
+      "TransferSingle",
+      fromBlock,
+      "latest"
+    );
+
+    for (const event of transferSingleEvents) {
+      if (event.args.operator.toLowerCase() === account.toLowerCase()) count++;
+    }
+
+    const transferBatchEvents = await contract.current.queryFilter(
+      "TransferBatch",
+      fromBlock,
+      "latest"
+    );
+
+    for (const event of transferBatchEvents) {
+      if (event.args.operator.toLowerCase() === account.toLowerCase())
+        count += event.args.ids.length;
+    }
+
+    setTotalMintedByAddress(count);
+
+    return count;
+  };
+
+  const fetchState = async () => {
+    setIsLoading(true);
+
+    // TODO: Only call when contract is updated
+    // await contractIsValid();
+
+    setBalance(await library.getBalance(account));
+
+    setTotalSupply(await contract.current.totalSupply());
+    /* 
+    setPreSaleStart((await contract.current.preSaleStart()) * 1000);
+    setPublicSaleStart((await contract.current.publicSaleStart()) * 1000);
+ */
+    await getMintedByUser();
+
+    setIsLoading(false);
+  };
+
+  const handleDecrease = () => {
+    if (count > 1) setCount(count - 1);
+  };
+
+  const handleIncrease = () => {
+    if (count < maxAllowed) setCount(count + 1);
+  };
+
+  const handleConnectWallet = async () => {
+    await activate(injected);
+  };
+
+  const handlePreSaleMint = async () => {
+    console.log("Pre-sale mint");
+
+    setIsMinting(true);
+
+    // // Make sure user hasn't minted more than what's allowed
+    // const mintedByUser = await getMintedByUser();
+
+    // if (mintedByUser >= preSaleMaxPerTx) {
+    //   toast.error("You've reached the maximum limit.");
+    //   setIsMinting(false);
+    //   return;
+    // }
+
+    try {
+      const [v, r, s] = signatures[account.toLowerCase()];
+
+      const tx = await contract.current.preSaleMint(v, r, s, count, {
+        value: ethers.utils.parseUnits(totalPrice.toString(), 18),
+      });
+
+      await tx.wait();
+
+      // setTotalMintedByAddress(totalMintedByAddress + count);
+
+      toast.success("Minted successfully.");
+    } catch (err) {
+      console.error(err);
+      console.log(err.code, err.message.substring(5));
+
+      if (err.code && err.code === "INSUFFICIENT_FUNDS") {
+        toast.error("Insufficient funds.");
+      } else if (err.code && err.code === 4001) {
+        toast.error("Transaction signature was denied.");
+      } else {
+        toast.error("Minting failed.");
+      }
+    }
+
+    setIsMinting(false);
+  };
+
+  const handlePublicSaleMint = async () => {
+    console.log("Public sale mint");
+
+    setIsMinting(true);
+
+    // // Make sure user hasn't minted more than what's allowed
+    // const mintedByUser = await getMintedByUser();
+
+    // if (mintedByUser >= publicSaleMaxPerTx) {
+    //   toast.error("You've reached the maximum limit.");
+    //   setIsMinting(false);
+    //   return;
+    // }
+
+    try {
+      const tx = await contract.current.publicSaleMint(count, {
+        value: ethers.utils.parseUnits(totalPrice.toString(), 18),
+      });
+
+      await tx.wait();
+
+      // setTotalMintedByAddress(totalMintedByAddress + count);
+
+      toast.success("Minted successfully.");
+    } catch (err) {
+      console.error(err);
+      console.log(err.code, err.message.substring(5));
+
+      if (err.code && err.code === "INSUFFICIENT_FUNDS") {
+        toast.error("Insufficient funds.");
+      } else if (err.code && err.code === 4001) {
+        toast.error("Transaction signature was denied.");
+      } else {
+        toast.error("Minting failed.");
+      }
+    }
+
+    setIsMinting(false);
+  };
+
+  const shortenAddress = (address, chars = 4) => {
+    return `${address.slice(0, chars)}...${address.slice(-chars)}`;
+  };
+
+  useEffect(() => {
+    if (!account) return;
+
+    signer.current = library.getSigner();
+    contract.current = new ethers.Contract(
+      contractAddress,
+      contractAbi,
+      signer.current
+    );
+
+    contract.current.on("TransferSingle", async () => {
+      fetchState();
+    });
+
+    contract.current.on("TransferBatch", async () => {
+      fetchState();
+    });
+
+    if (account.toLowerCase() in signatures) setIsWhitelisted(true);
+
+    fetchState();
+  }, [account]);
+
+  //timer functions
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPreSaleStart(handlePreSaleTimeLeft());
+      setPublicSaleStart(handlePublicSaleStart());
+    }, 1000);
+    setPreSaleIsActive(!preSaleStart.difference);
+    setPublicSaleIsActive(!publicSaleStart.difference);
+    return () => clearTimeout(timer);
+  });
+
+  useEffect(() => {
+    if (!preSaleStart) return;
+
+    const now = Date.now();
+
+    // Remove current timeout if there is any
+    if (preSaleStartTimeout.current) clearTimeout(preSaleStartTimeout.current);
+
+    // Set timeout for pre-sale start
+    preSaleStartTimeout.current = setTimeout(() => {
+      setPreSaleIsActive(true);
+    }, preSaleStart - now);
+  }, [preSaleStart]);
+
+  useEffect(() => {
+    if (!publicSaleStart) return;
+
+    const now = Date.now();
+
+    // Remove current timeout if there is any
+    if (publicSaleStartTimeout.current)
+      clearTimeout(publicSaleStartTimeout.current);
+
+    // Set timeout for public sale start
+    publicSaleStartTimeout.current = setTimeout(() => {
+      setPublicSaleIsActive(true);
+    }, publicSaleStart - now);
+  }, [publicSaleStart]);
+
+  useEffect(() => {
+    if (!maxAllowed) return;
+
+    if (count > maxAllowed) {
+      setCount(Math.max(maxAllowed, 1));
+    }
+  }, [maxAllowed]);
+
   return (
     <div className={styles["mint"]}>
       <video
@@ -90,17 +365,15 @@ export default function Claim() {
         muted
         playsInline
       >
-        <source src={"/images/JoeBiden.webm"} type="video/webm" />
-        <source src={"/images/JoeBiden.mp4"} type="video/mp4" />
+        <source src={"/images/metapizzahero.webm"} type="video/webm" />
+        <source src={"/images/metapizzahero.mp4"} type="video/mp4" />
       </video>
       <div className={styles["claim-text-wrapper"]}>
         <div className={styles["payment-modal"]}>
           <div className={styles["payment-header"]}>
             <div className={styles["payment-header-text"]}>
-              <h4>BUY YOUR VILLAIN NFT</h4>
-              <p className={styles["pt-1.5 italic-grey"]}>
-                Total supply: 1.500 NFTs
-              </p>
+              <h4>MINT YOUR METAPIZZA NFT</h4>
+              <p className={styles["pt-1.5 italic-grey"]}>Total supply: TBD</p>
             </div>
           </div>
           <div className={styles["payment-info"]}>
@@ -111,17 +384,19 @@ export default function Claim() {
               muted
               playsInline
             >
-              <source src={"/images/JoeBiden.webm"} type="video/webm" />
-              <source src={"/images/JoeBiden.mp4"} type="video/mp4" />
+              <source src={"/images/metapizzahero.webm"} type="video/webm" />
+              <source src={"/images/metapizzahero.mp4"} type="video/mp4" />
             </video>
             <div className={styles["payment-info-text"]}>
               <p>Price Per NFT</p>
               <h5>{unitPrice} ETH + gas</h5>
-              <p className={styles["launch-date"]}>Coming soon</p>
+              <p className={styles["launch-date"]}>
+                Public sale available 05/07/22
+              </p>
             </div>
           </div>
           <div className={styles["ape-number"]}>
-            <div className={styles["minus"]}>
+            <div className={styles["minus"]} onClick={handleDecrease}>
               <svg
                 width="16"
                 height="2"
@@ -135,8 +410,8 @@ export default function Claim() {
                 />
               </svg>
             </div>
-            <h5>1</h5>
-            <div className={styles["plus"]}>
+            <h5>{count}</h5>
+            <div className={styles["plus"]} onClick={handleIncrease}>
               <svg
                 width="16"
                 height="16"
@@ -150,16 +425,25 @@ export default function Claim() {
                 />
               </svg>
             </div>
-            <h5 className={styles["ape-max"]}>7 Max</h5>
+            <h5 className={styles["ape-max"]}>{maxAllowed} Max</h5>
           </div>
           <div className={styles["ape-total"]}>
             <p>Total</p>
-            <h5>{unitPrice} ETH + gas</h5>
+            <h5>{totalPrice.toFixed(4)} ETH + gas</h5>
           </div>
 
-          <button className={styles["purchase-button"]}>Connect wallet</button>
+          {!publicSaleIsActive && <p>"Public launch at 4pm EST"</p>}
+
+          <button
+            className={styles["purchase-button"]}
+            disabled={!preSaleIsActive && !publicSaleIsActive}
+          >
+            {!publicSaleIsActive ? "Presale" : "Buy Now"}
+          </button>
         </div>
       </div>
+      <Toaster />
     </div>
   );
-}
+};
+export default Claim;
