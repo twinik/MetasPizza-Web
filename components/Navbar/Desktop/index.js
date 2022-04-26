@@ -17,7 +17,7 @@ export default function mobile({ style, logo, width }) {
   };
   return (
     <div className={style["nav-container"]}>
-      <div style={{ width: 250, cursor: "pointer" }}>
+      <div style={{ width: 200, cursor: "pointer" }}>
         <Link href={"/"} replace>
           <Image
             src={logo}

@@ -21,6 +21,7 @@
   margin-bottom: 64px;
   margin-left: auto;
   margin-right: 80px;
+  border: 2px solid #fff;
 }
 
 .mint h3 {
@@ -208,10 +209,12 @@
   .claim-text-wrapper {
     flex: 1;
     margin: auto;
+    width: 70vw;
   }
   .mint-gif {
     flex: 1;
     margin: auto;
+    width: 50vw;
   }
 }
 
@@ -220,9 +223,9 @@
     padding-top: 2rem;
   }
   .claim-text-wrapper {
-    width: 20rem;
+    width: 75vw;
   }
   .mint-gif {
-    width: 20rem;
+    width: 75vw;
   }
 }
