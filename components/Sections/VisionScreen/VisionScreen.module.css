@@ -132,4 +132,7 @@
   .content-part {
     padding-left: 3.5rem;
   }
+  .img-container {
+    width: 40%;
+  }
 }
