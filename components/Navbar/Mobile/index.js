@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Hamburger from "hamburger-react";
-import { ButtonRounded } from "../../Buttons";
-import styles from "./mobile.module.css";
+import { ButtonRoundedMobile } from "../../Buttons";
+import style from "./mobile.module.css";
 import { useTransition, animated, config } from "react-spring";
 import ItemNavbarProduct from "../Components/ItemNavbarProduct";
 import ItemNavBar from "../Components/ItemNavBar";
@@ -30,13 +30,13 @@ export default function mobile({ style, logo, width }) {
     <>
       <div className={style["nav-container"]}>
         <div
-          style={isOpen ? { opacity: 0 } : { width: 250, cursor: "pointer" }}
+          style={isOpen ? { opacity: 0 } : { width: 200, cursor: "pointer" }}
         >
           <Link href={"/"} replace>
             <Image
               className="nav-iconLogo"
               src={logo}
-              alt="Nova Launch Logo"
+              alt="Logo"
               layout="responsive"
             />
           </Link>
@@ -67,38 +67,26 @@ export default function mobile({ style, logo, width }) {
               style={{ ...animStyle }}
               className={style["nav-slideContainer-content"]}
             >
-              <ButtonRounded text="Launch your nft mint" />
               <div style={{ paddingTop: "2.2rem", width: "90%" }}>
-                {ProductsOptions.map(
-                  ({ title, description, icon, link }, index) => (
-                    <ItemNavbarProduct
-                      key={title}
-                      title={title}
-                      description={description}
-                      icon={icon}
-                      style={
-                        index === 0
-                          ? { paddingTop: 0 }
-                          : index === ProductsOptions.length - 1
-                          ? { border: "none", paddingBottom: 0 }
-                          : {}
-                      }
-                      link={link}
-                      setOpen={setOpen}
-                    />
-                  )
-                )}
-              </div>
-              <div style={{ paddingTop: "2.2rem", width: "90%" }}>
-                {OptionsMenu.map(({ label, to }, index) => (
-                  <ItemNavBar
-                    key={label}
-                    to={to}
-                    text={label}
+                {ProductsOptions.map(({ title, icon, link }, index) => (
+                  <ItemNavbarProduct
+                    key={title}
+                    title={title}
+                    icon={icon}
+                    style={
+                      index === 0
+                        ? { paddingTop: 0 }
+                        : index === ProductsOptions.length - 1
+                        ? { border: "none", paddingBottom: 0 }
+                        : {}
+                    }
+                    link={link}
                     setOpen={setOpen}
-                    index={index}
                   />
                 ))}
+              </div>
+              <div className={style["subscribe-container"]}>
+                <ButtonRoundedMobile text={"Subscribe"} />
               </div>
             </animated.div>
           )
