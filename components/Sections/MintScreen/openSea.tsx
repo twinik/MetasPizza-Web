@@ -11,7 +11,7 @@ import { ethers } from "ethers";
 import toast, { Toaster } from "react-hot-toast";
 import Countdown from "react-countdown";
 import { useCookies } from "react-cookie";
-import contractAbi from "../../../utils2/abi.json";
+import contractAbi from "../../../utils/abi.json";
 import Button from "./button";
 
 // const injected = new InjectedConnector({ supportedChainIds: [1] });
