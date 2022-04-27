@@ -12,6 +12,8 @@
     "@fortawesome/free-solid-svg-icons": "^6.1.1",
     "@fortawesome/react-fontawesome": "^0.1.18",
     "@headlessui/react": "^1.4.2",
+    "@iconify/icons-mdi": "^1.2.9",
+    "@iconify/react": "^3.2.1",
     "@loadable/component": "^5.15.0",
     "@mantine/core": "^4.1.0",
     "@mantine/hooks": "^4.1.0",
@@ -29,6 +31,7 @@
     "hamburger-react": "^2.5.0",
     "next": "^12.1.5",
     "react": "^17.0.2",
+    "react-cookie": "^4.1.1",
     "react-countdown": "^2.3.2",
     "react-dom": "^17.0.2",
     "react-hot-toast": "^2.2.0",
@@ -39,5 +42,10 @@
     "web-vitals": "^1.1.2",
     "web3": "^1.6.0",
     "web3modal": "^1.9.4"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.5",
+    "postcss": "^8.4.12",
+    "tailwindcss": "^3.0.24"
   }
 }
