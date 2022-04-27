@@ -12,7 +12,7 @@ function index() {
             src="/images/metapizzahero.gif"
             alt="PizzaHero"
             width={1200}
-            height={1200}
+            height={1180}
           />
         </section>
         <section className="w-full xl:w-[48%] lg:mb-8 xl:mb-0 xl:py-10 max-h-lg max-w-xl">
