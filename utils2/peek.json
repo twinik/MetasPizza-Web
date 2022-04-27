@@ -1,0 +1,62 @@
+[
+  {
+    "name": "Albert Einstein",
+    "image": "AlbertEinstein.gif"
+  },
+  {
+    "name": "Baby",
+    "image": "Baby.gif"
+  },
+  {
+    "name": "BTC Laser Eyes",
+    "image": "BTCLaserEyes.gif"
+  },
+  {
+    "name": "Cop",
+    "image": "Cop.gif"
+  },
+  {
+    "name": "Donald Trump",
+    "image": "DonaldTrump.gif"
+  },
+  {
+    "name": "Elon Musk",
+    "image": "Elonmusk.gif"
+  },
+  {
+    "name": "Joe Biden",
+    "image": "JoeBiden.gif"
+  },
+  {
+    "name": "Marilyn Monroe",
+    "image": "MarilynMonroe.gif"
+  },
+  {
+    "name": "Mike Tyson",
+    "image": "MikeTyson.gif"
+  },
+  {
+    "name": "Mona Lisa",
+    "image": "MonaLisaGreenAlien.gif"
+  },
+  {
+    "name": "Mother Teresa",
+    "image": "MotherTeresa.gif"
+  },
+  {
+    "name": "Pablo Escobar",
+    "image": "PabloEscobar.gif"
+  },
+  {
+    "name": "Sumo",
+    "image": "Sumo.gif"
+  },
+  {
+    "name": "Tux Man",
+    "image": "TuxMan.gif"
+  },
+  {
+    "name": "Vaccine Injection",
+    "image": "VaccineInjection.gif"
+  }
+]
