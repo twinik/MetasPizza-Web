@@ -4,7 +4,10 @@ class MyDocument extends Document {
   render() {
     return (
       <Html>
-        <Head></Head>
+        <Head>
+          <title>NFT | MetaPizza</title>
+          <meta property="og:title" content="Page title" key="title" />
+        </Head>
         <body style={{ margin: 0 }}>
           <Main />
           <NextScript />
